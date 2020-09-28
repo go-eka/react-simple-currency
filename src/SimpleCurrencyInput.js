@@ -42,8 +42,7 @@ class SimpleCurrencyInput extends React.Component {
 
   onInputType (event) {
     const input = event.target.value
-    const isNegative = this.props.allowNegative && this.includesNegativeSymbol(input)
-    let rawValue = this.getRawValue(input, isNegative)
+    let rawValue = this.getRawValue(input)
 
     if (!rawValue) {
       rawValue = 0
@@ -53,7 +52,7 @@ class SimpleCurrencyInput extends React.Component {
 
     this.setState({
       rawValue,
-      isNegative,
+      isNegative: this.props.allowNegative && this.includesNegativeSymbol(input),
     })
   }
 
@@ -68,7 +67,8 @@ class SimpleCurrencyInput extends React.Component {
     this.props.onInputChange(rawValue, display)
   }
 
-  getRawValue (displayedValue, isNegative) {
+  getRawValue (displayedValue) {
+    const {allowNegative} = this.props
     let result = displayedValue
 
     result = removeOccurrences(result, this.props.delimiter, this.props.allowNegative)
@@ -76,9 +76,10 @@ class SimpleCurrencyInput extends React.Component {
     result = removeOccurrences(result, this.props.unit, this.props.allowNegative)
     result = result.replace(/ /g, '') // remove whitespaces so parseInt works for negative values
 
-
     let intValue = parseInt(result)
-    if (this.props.allowNegative && isNegative && intValue > 0) {
+    if (!allowNegative) {
+      intValue = Math.abs(intValue)
+    } else if (allowNegative && this.includesNegativeSymbol(result) && intValue > 0) {
       intValue = intValue * -1
     }
 

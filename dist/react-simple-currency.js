@@ -67,8 +67,7 @@ var SimpleCurrencyInput = (function (_React$Component) {
     key: 'onInputType',
     value: function onInputType(event) {
       var input = event.target.value;
-      var isNegative = this.props.allowNegative && this.includesNegativeSymbol(input);
-      var rawValue = this.getRawValue(input, isNegative);
+      var rawValue = this.getRawValue(input);
 
       if (!rawValue) {
         rawValue = 0;
@@ -78,7 +77,7 @@ var SimpleCurrencyInput = (function (_React$Component) {
 
       this.setState({
         rawValue: rawValue,
-        isNegative: isNegative
+        isNegative: this.props.allowNegative && this.includesNegativeSymbol(input)
       });
     }
   }, {
@@ -96,7 +95,9 @@ var SimpleCurrencyInput = (function (_React$Component) {
     }
   }, {
     key: 'getRawValue',
-    value: function getRawValue(displayedValue, isNegative) {
+    value: function getRawValue(displayedValue) {
+      var allowNegative = this.props.allowNegative;
+
       var result = displayedValue;
 
       result = removeOccurrences(result, this.props.delimiter, this.props.allowNegative);
@@ -105,7 +106,9 @@ var SimpleCurrencyInput = (function (_React$Component) {
       result = result.replace(/ /g, ''); // remove whitespaces so parseInt works for negative values
 
       var intValue = parseInt(result);
-      if (this.props.allowNegative && isNegative && intValue > 0) {
+      if (!allowNegative) {
+        intValue = Math.abs(intValue);
+      } else if (allowNegative && this.includesNegativeSymbol(result) && intValue > 0) {
         intValue = intValue * -1;
       }
 
